@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// import 'home.dart';
+
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
@@ -55,9 +57,184 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system,
-      home: const EnterNameScreen(),
+      home: const SplashScreen(),
     );
   }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize animation controller
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    // Create a curved animation for the zoom effect
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    // Add animation listener to navigate when complete
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // Navigate to EnterNameScreen after animation completes
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const EnterNameScreen()),
+        );
+      }
+    });
+
+    // Start the animation
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFFFFF),
+              Color(0xFFFFFFFF).withOpacity(0.7),
+            ],
+          ),
+        ),
+        child: Center(
+          child: ScaleTransition(
+            scale: Tween<double>(
+              begin: 2.8,
+              end: 1.2,
+            ).animate(_animation),
+            child: FadeTransition(
+              opacity: Tween<double>(
+                begin: 0.0,
+                end: 1.8,
+              ).animate(_animation),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo from assets
+                  Container(
+                    width: 150,
+                    height: 150,
+                    // decoration: const BoxDecoration(
+                    //   shape: BoxShape.circle,
+                    //   color: Colors.white,
+                    // ),
+                    padding: const EdgeInsets.all(12),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // App name text
+                  const Text(
+                    'Peer Drop',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Custom painter to draw the logo (globe with cursor)
+class GlobeAndCursorPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final double radius = size.width / 2;
+    final Offset center = Offset(size.width / 2, size.height / 2);
+
+    // Draw globe (circle)
+    canvas.drawCircle(center, radius, paint);
+
+    // Draw longitude lines
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      pi / 2,
+      pi,
+      false,
+      paint,
+    );
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      3 * pi / 2,
+      pi / 2,
+      false,
+      paint,
+    );
+
+    // Draw latitude lines
+    canvas.drawLine(
+      Offset(0, center.dy),
+      Offset(size.width, center.dy),
+      paint,
+    );
+
+    canvas.drawLine(
+      Offset(center.dx, 0),
+      Offset(center.dx, size.height),
+      paint,
+    );
+
+    // Draw cursor/arrow
+    final Path cursorPath = Path();
+    final double arrowSize = radius * 0.6;
+    final Offset arrowStart = Offset(center.dx + radius * 0.3, center.dy + radius * 0.3);
+
+    cursorPath.moveTo(arrowStart.dx, arrowStart.dy);
+    cursorPath.lineTo(arrowStart.dx + arrowSize, arrowStart.dy);
+    cursorPath.lineTo(arrowStart.dx, arrowStart.dy + arrowSize);
+    cursorPath.close();
+
+    final Paint cursorPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(cursorPath, cursorPaint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
 
 class EnterNameScreen extends StatefulWidget {
@@ -137,8 +314,8 @@ class _EnterNameScreenState extends State<EnterNameScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withOpacity(0.7),
+              Color(0xFFFFFFFF),
+              Color(0xFFFFFFFF).withOpacity(0.7),
             ],
           ),
         ),
@@ -161,17 +338,17 @@ class _EnterNameScreenState extends State<EnterNameScreen> {
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.chat_bubble_outline,
-                  size: 60,
-                  color: Theme.of(context).primaryColor,
+                child: Image.asset(
+                  'assets/logo1.png',
+                  width: 70,
+                  height: 70,
                 ),
               ),
               const SizedBox(height: 30),
               Text(
-                'Nearby Chat',
+                'Peer Drop',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -179,7 +356,7 @@ class _EnterNameScreenState extends State<EnterNameScreen> {
               Text(
                 'Chat with nearby devices without internet',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.black.withOpacity(0.8),
                 ),
               ),
               const Spacer(),
@@ -261,6 +438,8 @@ class _EnterNameScreenState extends State<EnterNameScreen> {
     super.dispose();
   }
 }
+
+// The rest of your code (ChatScreen and other classes) remains unchanged
 
 class ChatScreen extends StatefulWidget {
   final String userName;
