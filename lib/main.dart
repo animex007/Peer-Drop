@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'loading.dart';
+
 // import 'home.dart';
 
 void main() => runApp(const MyApp());
@@ -413,13 +415,26 @@ class _EnterNameScreenState extends State<EnterNameScreen> {
     );
   }
 
+// Update the _continueToChat method in _EnterNameScreenState class
   void _continueToChat() {
     final name = _nameController.text.trim();
     if (name.isNotEmpty) {
+      // Show the loading screen before transitioning to the chat screen
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ChatScreen(userName: name),
+          builder: (context) => LoadingScreen(
+            userName: name,
+            onLoadingComplete: () {
+              // Replace loading screen with chat screen when done
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(userName: name),
+                ),
+              );
+            },
+          ),
         ),
       );
     } else {
